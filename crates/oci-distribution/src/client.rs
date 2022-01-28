@@ -28,7 +28,6 @@ use www_authenticate::{Challenge, ChallengeFields, RawChallenge, WwwAuthenticate
 
 const MIME_TYPES_DISTRIBUTION_MANIFEST: &[&str] = &[
     "application/vnd.docker.distribution.manifest.v2+json",
-    "application/vnd.docker.distribution.manifest.list.v2+json",
     "application/vnd.oci.image.manifest.v1+json",
 ];
 
@@ -1882,14 +1881,8 @@ mod test {
     async fn test_pull_docker_io() {
         let reference = Reference::try_from(DOCKER_IO_IMAGE).expect("failed to parse reference");
         let mut c = Client::default();
-        let err = c
-            .pull_manifest(&reference, &RegistryAuth::Anonymous)
-            .await
-            .unwrap_err();
-        // we don't support manifest list so pulling failed but this error means it did downloaded it
-        assert_eq!(
-            format!("{}", err),
-            "unsupported media type: application/vnd.docker.distribution.manifest.list.v2+json"
-        );
+        let result = c.pull_manifest(&reference, &RegistryAuth::Anonymous).await;
+        assert!(result.is_ok(), "Error when pulling from DockerHub.");
+
     }
 }
